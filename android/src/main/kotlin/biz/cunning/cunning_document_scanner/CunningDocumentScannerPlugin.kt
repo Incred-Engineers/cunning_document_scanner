@@ -174,7 +174,7 @@ class CunningDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityA
             .setGalleryImportAllowed(isGalleryImportAllowed)
             .setPageLimit(noOfPages)
             .setResultFormats(RESULT_FORMAT_JPEG)
-            .setScannerMode(SCANNER_MODE_FULL)
+            .setScannerMode(SCANNER_MODE_BASE)
             .build()
         val scanner = GmsDocumentScanning.getClient(options)
         scanner.getStartScanIntent(activity).addOnSuccessListener {
