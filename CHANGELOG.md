@@ -1,3 +1,38 @@
+## 2.0.0
+### Breaking Changes
+* Reorganized library structure: all implementation files moved to `lib/src/` directory.
+* Renamed `ios_options.dart` to `ios_scanner_options.dart` for better clarity.
+* Separated `IosImageFormat` enum into its own file (`ios_image_format.dart`).
+
+### Improvements
+* Added custom exception `CunningDocumentScannerException` with specific error codes.
+* Replaced generic `Exception` with `CunningDocumentScannerException.permissionDenied()` for better error handling.
+* Improved code organization with barrel exports - users only need a single import.
+* Added comprehensive unit tests for custom exceptions.
+* Enhanced equality operators for `CunningDocumentScannerException`.
+
+### Migration Guide
+* No changes required for users - the public API remains the same with `import 'package:cunning_document_scanner/cunning_document_scanner.dart';`
+* If catching exceptions, update catch blocks to use `CunningDocumentScannerException` instead of generic `Exception`.
+
+## 1.4.0
+### General
+* Bumped `permission_handler` to `12.0.1`.
+* Updated the example app to use Kotlin `2.2.21`, Android Gradle Plugin `8.13.1`, and Gradle `8.13`.
+* Added detailed documentation comments to the `CunningDocumentScanner` class.
+### Android
+* Upgraded `play-services-mlkit-document-scanner` to `16.0.0`.
+* Updated `compileSdk` to `34`.
+
+## 1.3.1
+* Upgraded dependencies.
+
+## 1.3.0
+* Allow users to configure the image output type on iOS (PNG or JPEG).
+
+## 1.2.3
+* Fix iOS crash where Documentscanner is not available
+
 ## 1.2.2
 * Fix bitmap exception crash on Android (thanks to rosenberg_ptr)
 

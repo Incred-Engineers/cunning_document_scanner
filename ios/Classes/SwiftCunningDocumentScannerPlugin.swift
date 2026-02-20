@@ -5,8 +5,9 @@ import VisionKit
 
 @available(iOS 13.0, *)
 public class SwiftCunningDocumentScannerPlugin: NSObject, FlutterPlugin, VNDocumentCameraViewControllerDelegate {
-   var resultChannel :FlutterResult?
-   var presentingController: VNDocumentCameraViewController?
+  var resultChannel: FlutterResult?
+  var presentingController: VNDocumentCameraViewController?
+  var scannerOptions: CunningScannerOptions = CunningScannerOptions()
 
   public static func register(with registrar: FlutterPluginRegistrar) {
     let channel = FlutterMethodChannel(name: "cunning_document_scanner", binaryMessenger: registrar.messenger())
@@ -16,11 +17,16 @@ public class SwiftCunningDocumentScannerPlugin: NSObject, FlutterPlugin, VNDocum
 
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
     if call.method == "getPictures" {
+            scannerOptions = CunningScannerOptions.fromArguments(args: call.arguments)
             let presentedVC: UIViewController? = UIApplication.shared.keyWindow?.rootViewController
             self.resultChannel = result
-            self.presentingController = VNDocumentCameraViewController()
-            self.presentingController!.delegate = self
-            presentedVC?.present(self.presentingController!, animated: true)
+            if VNDocumentCameraViewController.isSupported {
+                self.presentingController = VNDocumentCameraViewController()
+                self.presentingController!.delegate = self
+                presentedVC?.present(self.presentingController!, animated: true)
+            } else {
+                result(FlutterError(code: "UNAVAILABLE", message: "Document camera is not available on this device", details: nil))
+            }
         } else {
             result(FlutterMethodNotImplemented)
             return
@@ -41,10 +47,18 @@ public class SwiftCunningDocumentScannerPlugin: NSObject, FlutterPlugin, VNDocum
         df.dateFormat = "yyyyMMdd-HHmmss"
         let formattedDate = df.string(from: currentDateTime)
         var filenames: [String] = []
-        for i in 0 ... scan.pageCount - 1 {
+        for i in 0 ..< scan.pageCount {
             let page = scan.imageOfPage(at: i)
-            let url = tempDirPath.appendingPathComponent(formattedDate + "-\(i).png")
-            try? page.pngData()?.write(to: url)
+            let url = tempDirPath.appendingPathComponent(formattedDate + "-\(i).\(scannerOptions.imageFormat.rawValue)")
+            switch scannerOptions.imageFormat {
+            case CunningScannerImageFormat.jpg:
+                try? page.jpegData(compressionQuality: scannerOptions.jpgCompressionQuality)?.write(to: url)
+                break
+            case CunningScannerImageFormat.png:
+                try? page.pngData()?.write(to: url)
+                break
+            }
+            
             filenames.append(url.path)
         }
         resultChannel?(filenames)
@@ -57,7 +71,7 @@ public class SwiftCunningDocumentScannerPlugin: NSObject, FlutterPlugin, VNDocum
     }
 
     public func documentCameraViewController(_ controller: VNDocumentCameraViewController, didFailWithError error: Error) {
-        resultChannel?(nil)
+        resultChannel?(FlutterError(code: "ERROR", message: error.localizedDescription, details: nil))
         presentingController?.dismiss(animated: true)
     }
 }
